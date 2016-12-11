@@ -30,6 +30,7 @@ class CMQ
         
     def initialize(host : String, topic : String, channel : String)
       @socket = TCPSocket.new(host, 1235)
+      @socket.sync = true
       @topic = topic
       @channel = channel
     end
@@ -62,6 +63,7 @@ class CMQ
     
     def initialize(host : String, topic : String)
       @socket = TCPSocket.new(host, 1234)
+      @socket.sync = true
       @topic = topic
     end
   

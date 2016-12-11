@@ -1,34 +1,24 @@
 require "socket"
 require "./lib.cr"
 
-channel = ARGV[0]
-message = ARGV[1]
+topic = ARGV[0]
 
-number_of_threads = 200
-number_of_runs = 1000
+producer = CMQ::Producer.new("localhost", topic)
+  
+total_messages_sent = 0
+total_start = Time.now
 
-channels = Array(Channel(Nil)).new
-
-sent_messages = 0
-number_of_threads.times do
-  spawn do
-    producer = CMQ::Producer.new("localhost", ARGV[0])
-    r_channel = Channel(Nil).new
-    channels << r_channel
-    sleep 2
-    number_of_runs.times do
-      start = Time.now
-      producer.write(sent_messages.to_s)
-      sent_messages = sent_messages + 1
-    end
-    
-    r_channel.send(nil)
-    producer.terminate
+spawn do
+  loop do
+    total_messages_sent = total_messages_sent + 1
+    producer.write("This is a test string")
+    sleep 0.000001
   end
 end
 
-sleep 2
-start = Time.now
-puts "Benchmark Started..."
-channels.each { |c| c.receive }
-puts "#{sent_messages} Messages done in #{Time.now - start}"
+loop do
+  print "Sent #{total_messages_sent} in #{(Time.now - total_start).to_f}s (#{total_messages_sent/(Time.now - total_start).to_f}/sec)\r"
+  sleep 0.5
+end
+
+producer.terminate

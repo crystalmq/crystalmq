@@ -17,15 +17,27 @@ class MessageRouter
     def initialize      
       begin
         if ARGV.is_a?(Array)
-          @debug = ARGV[0] == "debug" ? true : false
-          @producer_port = ARGV[1].nil? ? 1234 : ARGV[1].to_i
-          @consumer_port = ARGV[2].nil? ? 1235 : ARGV[2].to_i
+          if ARGV.size > 0
+            @debug = ARGV[0] == "debug" ? true : false
+          end
+          if ARGV.size > 1
+            @producer_port = ARGV[1].to_i
+          else
+            @producer_port = 1234
+          end
+          if ARGV.size > 2
+            @consumer_port = ARGV[2].to_i
+          else
+            @consumer_port = 1235
+          end
         else
           @debug = false
           @producer_port = 1234
           @consumer_port = 1235
         end
-      rescue
+      rescue e
+        puts e.class
+        puts e.message
         @debug = false
         @producer_port = 1234
         @consumer_port = 1235
@@ -36,8 +48,8 @@ class MessageRouter
   CONFIGURATION = Configuration.new
 end
 
-producer_server = TCPServer.new("localhost", MessageRouter::CONFIGURATION.producer_port)
-consumer_server = TCPServer.new("localhost", MessageRouter::CONFIGURATION.consumer_port)
+producer_server = TCPServer.new(MessageRouter::CONFIGURATION.producer_port)
+consumer_server = TCPServer.new(MessageRouter::CONFIGURATION.consumer_port)
 
 # Create the core "Repository" of active topics
 topics = [] of MessageRouter::Topic

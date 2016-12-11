@@ -53,6 +53,7 @@ if producer_benchmark
   
   spawn do
     loop do
+      total_messages_sent = total_messages_sent + 1
       producer.write("This is a test string")
     end
   end

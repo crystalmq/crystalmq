@@ -14,7 +14,7 @@ spawn do
   CMQ::Consumer.new("localhost", ARGV[0], ARGV[1]).consume do |message|
     total_messages_received = total_messages_received + 1
 #    print "\rMessage Received #{(Time.now - start).to_f * 1000}ms\n"
-    print "Received #{total_messages_received} in #{(Time.now - total_start).to_f} (#{total_messages_received/(Time.now - total_start).to_f}/sec)\r"
+    print "Received #{total_messages_received} in #{(Time.now - total_start).to_f}s (#{total_messages_received/(Time.now - total_start).to_f}/sec)\r"
     #puts total_messages_received/(Time.now - total_start).to_f
   end
 end

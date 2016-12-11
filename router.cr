@@ -3,6 +3,8 @@
 
 require "socket"
 require "msgpack"
+require "option_parser"
+
 require "./lib/channel.cr"
 require "./lib/client.cr"
 require "./lib/consumer_handler.cr"
@@ -14,35 +16,19 @@ class MessageRouter
   class Configuration
     getter :consumer_port, :producer_port, :debug
     
-    def initialize      
-      begin
-        if ARGV.is_a?(Array)
-          if ARGV.size > 0
-            @debug = ARGV[0] == "debug" ? true : false
-          end
-          if ARGV.size > 1
-            @producer_port = ARGV[1].to_i
-          else
-            @producer_port = 1234
-          end
-          if ARGV.size > 2
-            @consumer_port = ARGV[2].to_i
-          else
-            @consumer_port = 1235
-          end
-        else
-          @debug = false
-          @producer_port = 1234
-          @consumer_port = 1235
-        end
-      rescue e
-        puts e.class
-        puts e.message
-        @debug = false
-        @producer_port = 1234
-        @consumer_port = 1235
+    def initialize
+      @debug = false
+      @consumer_port = 1235
+      @producer_port = 1234
+    
+      OptionParser.parse! do |parser|
+        parser.banner = "Usage: router.cr [arguments]"
+        parser.on("-d", "--upcase", "Debug") { @debug = true }
+        parser.on("-c PORT", "--consumer-port=PORT", "Specifies the Consumer Port") { |port| @consumer_port = port.to_i }
+        parser.on("-p PORT", "--producer-port=PORT", "Specifies the Producer Port") { |port| @producer_port = port.to_i }
+        parser.on("-h", "--help", "Show this help") { puts parser; exit 0 }
       end
-    end      
+    end
   end
   
   CONFIGURATION = Configuration.new
@@ -57,7 +43,7 @@ topics = [] of MessageRouter::Topic
 # Spawn the Consumer Socket
 spawn do
   loop do
-    puts "CONSUMER[core] Listening For Consumer Socket" if MessageRouter::CONFIGURATION.debug
+    puts "CONSUMER[core] Listening For Consumer Socket on ::#{MessageRouter::CONFIGURATION.consumer_port}" if MessageRouter::CONFIGURATION.debug
     socket = consumer_server.accept
     socket.sync = true
     puts "CONSUMER[core] Accepted New Socket #{socket.fd}" if MessageRouter::CONFIGURATION.debug
@@ -83,7 +69,7 @@ end
 # Spawn the Producer Socket
 spawn do
   loop do
-    puts "PRODUCER[core] Listening For Producer Socket" if MessageRouter::CONFIGURATION.debug
+    puts "PRODUCER[core] Listening For Producer Socket on ::#{MessageRouter::CONFIGURATION.producer_port}" if MessageRouter::CONFIGURATION.debug
     socket = producer_server.accept
     socket.sync = true
     puts "PRODUCER[core] Accepted New Socket #{socket.fd}" if MessageRouter::CONFIGURATION.debug

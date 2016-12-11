@@ -12,4 +12,8 @@ This application is very similar to NSQ. You will need three components.
 	
 	crystal tools/producer.cr my_topic "Hello World"
 	
-Check out the client_examples, with a working ruby module!
+If you would like to run the benchmarks, feel free to use tools/meth
+
+	./meth --consumer # Will benchmark received messags (used in conjuction with producer)
+	./meth --producer # Will benchmark sent messages (used in conjunction with consumer)
+	./meth --latency  # Will benchmark request latency

@@ -50,12 +50,10 @@ if producer_benchmark
   
   total_messages_sent = 0
   total_start = Time.now
-
+  
   spawn do
     loop do
-      total_messages_sent = total_messages_sent + 1
       producer.write("This is a test string")
-      sleep 0.000001
     end
   end
 

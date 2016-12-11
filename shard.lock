@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  msgpack:
+    github: benoist/msgpack-crystal
+    commit: 8ecde2ede883510e784ccb47762ef95a53640c15
+

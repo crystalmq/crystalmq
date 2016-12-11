@@ -1,0 +1,15 @@
+This application is very similar to NSQ. You will need three components.
+
+1) A Message Router, running with either debug set to true or false
+	
+	crystal router.cr false
+	
+2) A Message Consumer, with a topic and channel set
+	
+	crystal tools/consumer.cr my_topic my_channel
+	
+3) A Message Producer, with a topic and message
+	
+	crystal tools/producer.cr my_topic "Hello World"
+	
+Check out the client_examples, with a working ruby module!

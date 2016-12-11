@@ -1,0 +1,7 @@
+.crystal/
+.DS_Store
+.idea/
+private/
+*.msg
+*.js
+bin_*

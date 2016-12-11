@@ -1,0 +1,5 @@
+name: "crystal-message-queue"
+version: 0.0.1
+dependencies:
+  msgpack:
+    github: benoist/msgpack-crystal

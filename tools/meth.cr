@@ -33,7 +33,14 @@ if consumer_benchmark
   end
 
   loop do
-    print "Received #{total_messages_received} in #{(Time.now - total_start).to_f}s (#{total_messages_received/(Time.now - total_start).to_f}/sec)\r"
+    request_per_second = total_messages_received/(Time.now - total_start).to_f
+    if request_per_second == 0
+      rps = 0
+    else
+      rps = request_per_second.to_i
+    end
+    
+    print "Received #{total_messages_received} in #{(Time.now - total_start).to_i}s (#{rps}/sec)\r"
     sleep 0.5
   end
 end
@@ -53,7 +60,14 @@ if producer_benchmark
   end
 
   loop do
-    print "Sent #{total_messages_sent} in #{(Time.now - total_start).to_f}s (#{total_messages_sent/(Time.now - total_start).to_f}/sec)\r"
+    request_per_second = total_messages_sent/(Time.now - total_start).to_f
+    if request_per_second == 0
+      rps = 0
+    else
+      rps = request_per_second.to_i
+    end
+
+    print "Sent #{total_messages_sent} in #{(Time.now - total_start).to_i}s (#{rps}/sec)\r"
     sleep 0.5
   end
 end

@@ -27,6 +27,7 @@ if consumer_benchmark
 
   spawn do
     CMQ::Consumer.new("localhost", topic, channel).consume do |message|
+      total_start = Time.now if total_messages_received == 1
       total_messages_received = total_messages_received + 1
     end
   end

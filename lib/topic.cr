@@ -13,7 +13,7 @@ class MessageRouter
     end
   
     def send_message(message)
-      @channels.each { |c| spawn { c.send_message(message) } }
+      @channels.each { |c| c.send_message(message) }
     end
   
   end

@@ -89,14 +89,13 @@ spawn do
         begin
           if current_second == (Time.now - total_start).to_i
             current_requests = current_requests + 1
-            if current_requests < maximum_requests_per_second
-              message = MessageRouter::ProducerPayload.from_msgpack(socket)
-              ps.handle_message(message, socket)
-              puts "PRODUCER[#{socket.fd}] Handled message" if MessageRouter::CONFIGURATION.debug
-            else
+            if current_requests > maximum_requests_per_second
               puts "PRODUCER[#{socket.fd}] BACKOFF!" if MessageRouter::CONFIGURATION.debug
-              sleep 0.0001
+              Fiber.yield # Give up the resources to another fiber
             end
+            message = MessageRouter::ProducerPayload.from_msgpack(socket)
+            ps.handle_message(message, socket)
+            puts "PRODUCER[#{socket.fd}] Handled message" if MessageRouter::CONFIGURATION.debug
           else
             current_second = (Time.now - total_start).to_i
             current_requests = 0

@@ -29,27 +29,27 @@ if consumer_benchmark
   puts "[meth] Using Channel #{channel}"
   total_start = Time.now
   total_messages_received = 1
-
+  message_count = 1
+  
   spawn do
     CMQ::Consumer.new(hostname, topic, channel).consume do |message|
       total_start = Time.now if total_messages_received == 1
       total_messages_received = total_messages_received + 1
+      message_count = message_count + 1
     end
   end
+  
+  previous_second = 0
+  start = Time.now
 
   loop do
-    begin
-      request_per_second = total_messages_received/(Time.now - total_start).to_f
-      if request_per_second == 0
-        rps = 0
-      else
-        rps = request_per_second.to_i
-      end
-    
-      print "Received #{total_messages_received} in #{(Time.now - total_start).to_i}s (#{rps}/sec)\r"
+    current_second = (Time.now - start).to_i
+    if current_second == previous_second
       sleep 0.5
-    ensure
-      print "Received #{total_messages_received} in #{(Time.now - total_start).to_i}s (#{rps}/sec)\r"
+    else
+      print "Received #{total_messages_received} in #{(Time.now - total_start).to_i}s (#{message_count}/sec)\r"      
+      message_count = 0
+      previous_second = current_second
     end
   end
 end
@@ -60,28 +60,28 @@ if producer_benchmark
   producer = CMQ::Producer.new(hostname, topic)
   
   total_messages_sent = 0
+  message_count = 0
   total_start = Time.now
   
   spawn do
     loop do
       total_messages_sent = total_messages_sent + 1
+      message_count = message_count + 1
       producer.write("This is a test string")
     end
   end
 
-  loop do
-    begin
-      request_per_second = total_messages_sent/(Time.now - total_start).to_f
-      if request_per_second == 0
-        rps = 0
-      else
-        rps = request_per_second.to_i
-      end
+  previous_second = 0
+  start = Time.now
 
-      print "Sent #{total_messages_sent} in #{(Time.now - total_start).to_i}s (#{rps}/sec)\r"
+  loop do
+    current_second = (Time.now - start).to_i
+    if current_second == previous_second
       sleep 0.5
-    ensure
-      print "Sent #{total_messages_sent} in #{(Time.now - total_start).to_i}s (#{rps}/sec)\r"
+    else
+      print "Sent #{total_messages_sent} in #{(Time.now - total_start).to_i}s (#{message_count}/sec)\r"      
+      message_count = 0
+      previous_second = current_second
     end
   end
 end
@@ -98,13 +98,12 @@ if latency_benchmark
     end
   end
 
-
   producer = CMQ::Producer.new(hostname, topic)
 
   loop do
     start = Time.now
     producer.write("This is a test string")
-    sleep 0.5
+    sleep 0.1
   end
 end
 

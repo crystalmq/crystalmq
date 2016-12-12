@@ -96,7 +96,7 @@ if latency_benchmark
   loop do
     start = Time.now
     producer.write("This is a test string")
-    sleep 0.1
+    sleep 0.5
   end
 end
 

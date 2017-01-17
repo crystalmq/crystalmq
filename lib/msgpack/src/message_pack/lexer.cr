@@ -151,9 +151,9 @@ class MessagePack::Lexer
     @byte_number += size
   end
 
-  private def read(type : T.class)
-    @byte_number += sizeof(T)
-    @io.read_bytes(T, IO::ByteFormat::BigEndian)
+  private def read(type)
+    @byte_number += sizeof(typeof(type))
+    @io.read_bytes(type, IO::ByteFormat::BigEndian)
   end
 
   private def unexpected_byte!(byte = current_byte)

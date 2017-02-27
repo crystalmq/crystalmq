@@ -10,13 +10,14 @@ class MessageRouter
       puts "PRODUCER[#{socket.fd}] >>> Handling Message: #{message}" if MessageRouter::CONFIGURATION.debug
       topic_name, message = message.topic, message.message
 
+      @topics.reject! { |t| t.channels.size == 0 }
       found_topic = @topics.find { |topic| topic.name == topic_name }
       if found_topic.nil?
-        puts "PRODUCER[#{socket.fd}] >>> Topic #{topic_name} not found" if MessageRouter::CONFIGURATION.debug
+        #puts "PRODUCER[#{socket.fd}] >>> Topic #{topic_name} not found" if MessageRouter::CONFIGURATION.debug
       else
-        puts "PRODUCER[#{socket.fd}] >>> Topic #{topic_name} found" if MessageRouter::CONFIGURATION.debug
+        #puts "PRODUCER[#{socket.fd}] >>> Topic #{topic_name} found" if MessageRouter::CONFIGURATION.debug
         found_topic.send_message(message)
-        puts "PRODUCER[#{socket.fd}] >>> Message Sent to #{topic_name}" if MessageRouter::CONFIGURATION.debug
+        #puts "PRODUCER[#{socket.fd}] >>> Message Sent to #{topic_name}" if MessageRouter::CONFIGURATION.debug
       end
     end
     

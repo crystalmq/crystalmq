@@ -68,6 +68,7 @@ if producer_benchmark
       total_messages_sent = total_messages_sent + 1
       message_count = message_count + 1
       producer.write("This is a test string")
+      sleep 0.000001
     end
   end
 

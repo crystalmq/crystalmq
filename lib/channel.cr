@@ -1,6 +1,7 @@
 class MessageRouter
   class Channel
     getter :name
+    getter :clients
     
     def initialize(name : String)
       @name = name

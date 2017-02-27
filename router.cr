@@ -20,7 +20,7 @@ class MessageRouter
       @debug = false
       @consumer_port = 1235
       @producer_port = 1234
-      @maximum_requests_per_second = 50000
+      @maximum_requests_per_second = 1000000
     
       OptionParser.parse! do |parser|
         parser.banner = "Usage: router.cr [arguments]"
@@ -54,14 +54,23 @@ spawn do
       cs = MessageRouter::ConsumerHandler.new(topics)
       loop do
         begin
-          puts "CONSUMER[#{socket.fd}] Listening for message..." if MessageRouter::CONFIGURATION.debug
           message = MessageRouter::ConsumerPayload.from_msgpack(socket)
           cs.handle_message(message, socket)
-          puts "CONSUMER[#{socket.fd}] Handled message #{message}" if MessageRouter::CONFIGURATION.debug
         rescue MessagePack::UnpackException
           socket.close
           cs.remove_client(socket)
           break
+        rescue ex : Errno
+          if ex.errno == Errno::ECONNRESET
+            puts "CONSUMER[#{socket.fd}] SOCKET FAILURE"
+            socket.close
+            break
+          else
+            puts "CONSUMER[#{socket.fd}] #{ex.errno} FAILURE???"
+            socket.close
+            break
+            #raise ex
+          end
         end
       end
     end
@@ -85,17 +94,15 @@ spawn do
       total_start = Time.now
       
       loop do
-        puts "PRODUCER[#{socket.fd}] Listening for message..." if MessageRouter::CONFIGURATION.debug
         begin
           if current_second == (Time.now - total_start).to_i
             current_requests = current_requests + 1
             if current_requests > maximum_requests_per_second
-              puts "PRODUCER[#{socket.fd}] BACKOFF!" if MessageRouter::CONFIGURATION.debug
+              #puts "PRODUCER[#{socket.fd}] BACKOFF!" if MessageRouter::CONFIGURATION.debug
               Fiber.yield # Give up the resources to another fiber
             end
             message = MessageRouter::ProducerPayload.from_msgpack(socket)
             ps.handle_message(message, socket)
-            puts "PRODUCER[#{socket.fd}] Handled message" if MessageRouter::CONFIGURATION.debug
           else
             current_second = (Time.now - total_start).to_i
             current_requests = 0
@@ -103,8 +110,17 @@ spawn do
         rescue MessagePack::UnpackException
           socket.close
           break
-        rescue
-          ps.handle_message(message, socket)
+        rescue ex : Errno
+          if ex.errno == Errno::ECONNRESET
+            puts "PRODUCER[#{socket.fd}] SOCKET FAILURE"
+            socket.close
+            break
+          else
+            puts "PRODUCER[#{socket.fd}] #{ex.errno} FAILURE???"
+            socket.close
+            break
+            #raise ex
+          end
         end
       end
     end

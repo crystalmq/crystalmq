@@ -13,6 +13,7 @@ class MessageRouter
     end
   
     def send_message(message)
+      @channels.reject! { |c| c.clients.size == 0 }
       @channels.each { |c| c.send_message(message) }
     end
   

@@ -62,7 +62,7 @@ spawn do
           break
         rescue ex : Errno
           if ex.errno == Errno::ECONNRESET
-            puts "CONSUMER[#{socket.fd}] SOCKET FAILURE"
+            puts "CONSUMER[#{socket.fd}] SOCKET FAILURE (Connection Reset By Peer)"
             socket.close
             break
           else
@@ -73,6 +73,8 @@ spawn do
           end
         end
       end
+      
+      puts "CONSUMER[#{socket.fd}] SHUTTING DOWN"
     end
   end  
 end
@@ -112,7 +114,7 @@ spawn do
           break
         rescue ex : Errno
           if ex.errno == Errno::ECONNRESET
-            puts "PRODUCER[#{socket.fd}] SOCKET FAILURE"
+            puts "PRODUCER[#{socket.fd}] SOCKET FAILURE (Connection Reset By Peer)"
             socket.close
             break
           else
@@ -123,6 +125,8 @@ spawn do
           end
         end
       end
+      
+      puts "PRODUCER[#{socket.fd}] SHUTTING DOWN"
     end
   end  
 end

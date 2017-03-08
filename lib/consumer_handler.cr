@@ -1,22 +1,22 @@
 class MessageRouter
   class ConsumerHandler
     getter :messages
-    def initialize(topics : Array(MessageRouter::Topic))
-      @topics = topics
+    def initialize(topic_container : MessageRouter::TopicsContainer)
+      @tc = topic_container
       @messages = 0
     end
     
     def handle_message(message : MessageRouter::ConsumerPayload, socket : TCPSocket)
       @messages = @messages + 1
       topic_name, channel_name = message.topic, message.channel
-      found_topic = @topics.find { |topic| topic.name == topic_name }
+      found_topic = @tc.topics.find { |topic| topic.name == topic_name }
       if found_topic.nil?
         puts "CONSUMER[#{socket.fd}] >>> Topic #{topic_name} not found" if MessageRouter::CONFIGURATION.debug
         new_topic = Topic.new(topic_name)
         new_channel = Channel.new(channel_name)
         new_channel.add_client(Client.new(socket))
         new_topic.add_channel(new_channel)
-        @topics << new_topic
+        @tc.topics << new_topic
         puts "CONSUMER[#{socket.fd}] >>> Topic #{topic_name} created" if MessageRouter::CONFIGURATION.debug
       else
         puts "CONSUMER[#{socket.fd}] >>> Found Topic #{topic_name}" if MessageRouter::CONFIGURATION.debug
@@ -36,7 +36,7 @@ class MessageRouter
     end
     
     def remove_client(socket)
-      @topics.each do |topic|
+      @tc.topics.each do |topic|
         topic.channels.each do |channel|
           channel.remove_client_with_socket(socket)
         end

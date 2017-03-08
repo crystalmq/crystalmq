@@ -22,6 +22,7 @@ class MessageRouter
           puts "No Clients..." if MessageRouter::CONFIGURATION.debug
         else
           selected_client = @clients.sample(1)[0]
+          puts "CONSUMER[#{selected_client.socket.fd}] Sending Message to #{@name}." if MessageRouter::CONFIGURATION.debug
           selected_client.send_message(message)
         end
       rescue

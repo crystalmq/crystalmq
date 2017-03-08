@@ -33,6 +33,23 @@ class MessageRouter
     end
   end
   
+  class TopicsContainer
+    def initialize
+      @mutex = Mutex.new
+      @topics = [] of MessageRouter::Topic
+    end
+  
+    def topics
+      synchronize do
+        @topics
+      end
+    end
+  
+    def synchronize
+      @mutex.synchronize { yield }
+    end
+  end
+  
   CONFIGURATION = Configuration.new
 end
 
@@ -40,7 +57,10 @@ producer_server = TCPServer.new(MessageRouter::CONFIGURATION.producer_port)
 consumer_server = TCPServer.new(MessageRouter::CONFIGURATION.consumer_port)
 
 # Create the core "Repository" of active topics
-topics = [] of MessageRouter::Topic
+
+
+tc = MessageRouter::TopicsContainer.new
+
 
 # Spawn the Consumer Socket
 spawn do
@@ -51,7 +71,7 @@ spawn do
     puts "CONSUMER[core] Accepted New Socket #{socket.fd}" if MessageRouter::CONFIGURATION.debug
     
     spawn do
-      cs = MessageRouter::ConsumerHandler.new(topics)
+      cs = MessageRouter::ConsumerHandler.new(tc)
       loop do
         begin
           message = MessageRouter::ConsumerPayload.from_msgpack(socket)
@@ -88,7 +108,7 @@ spawn do
     puts "PRODUCER[core] Accepted New Socket #{socket.fd}" if MessageRouter::CONFIGURATION.debug
     
     spawn do
-      ps = MessageRouter::ProducerHandler.new(topics)
+      ps = MessageRouter::ProducerHandler.new(tc)
       
       maximum_requests_per_second = MessageRouter::CONFIGURATION.maximum_requests_per_second
       current_requests = 0
